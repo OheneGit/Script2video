@@ -661,7 +661,7 @@ export default function Home() {
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { v: segments.reduce((a,s)=>a+s.clips.length,0), l: 'Clips found' },
-                  { v: [...new Set(segments.flatMap(s=>s.clips.map(c=>c.source)))].length, l: 'Sources' },
+                  { v: Array.from(new Set(segments.flatMap(s=>s.clips.map(c=>c.source)))).length, l: 'Sources' },
                   { v: fmtDur(totalDur), l: 'Duration' },
                 ].map(({v,l}) => (
                   <div key={l} className="bg-gray-50 rounded-lg p-2 text-center">
