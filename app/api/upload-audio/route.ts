@@ -16,10 +16,18 @@ async function getAudioDuration(filePath: string): Promise<number> {
     const { stdout } = await execAsync(
       `ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${filePath}"`
     )
-    return parseFloat(stdout.trim()) || 0
-  } catch { return 0 }
+    const dur = parseFloat(stdout.trim())
+    if (dur && dur > 0) return dur
+    // fallback: get file size and estimate duration
+    const stats = fs.statSync(filePath)
+    return Math.round(stats.size / 16000) // rough estimate for MP3
+  } catch {
+    try {
+      const stats = fs.statSync(filePath)
+      return Math.round(stats.size / 16000)
+    } catch { return 0 }
+  }
 }
-
 export async function POST(req: NextRequest) {
   try {
     ensureDir()
