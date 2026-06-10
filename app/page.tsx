@@ -687,7 +687,7 @@ export default function Home() {
       </div>
     </div>
 
-    {/* ── Editor overlay ── */}
+    {/* Editor overlay */}
     {showEditor && segments.length > 0 && (
       <div className="fixed inset-0 z-50">
         <VideoEditor
