@@ -170,7 +170,10 @@ async function runRender(jobId: string, req: RenderRequest) {
     const outputFile = path.join(OUTPUT_DIR, `${jobId}.mp4`)
 
     fs.writeFileSync(listFile, trimmedPaths.map(p => `file '${p}'`).join('\n'))
-    await execAsync(`ffmpeg -y -f concat -safe 0 -i "${listFile}" -c copy "${concatFile}"`, { timeout: 3600000 })
+    await execAsync(
+  `ffmpeg -y -i "${concatFile}" -i "${audioPath}" -map 0:v -map 1:a -c:v copy -c:a aac -b:a 128k -shortest "${outputFile}"`,
+  { timeout: 3600000 }
+)
 
     trimmedPaths.forEach(p => fs.unlink(p, () => {}))
     fs.unlink(listFile, () => {})
