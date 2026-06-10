@@ -211,7 +211,7 @@ async function runRender(jobId: string, req: RenderRequest) {
 
     // ultrafast for final output too
     await execAsync(
-      `ffmpeg -y ${inputs} ${maps} ${vfArgs} -c:v libx264 -preset ultrafast -crf 28 ${audioArgs} "${outputFile}"`,
+      `ffmpeg -y ${inputs} ${maps} ${vfArgs} -c:v copy ${audioArgs} "${outputFile}"`,
       { timeout: 3600000 }
     )
 
