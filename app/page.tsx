@@ -685,7 +685,6 @@ export default function Home() {
           )}
         </div>
       </div>
-    </div>
 
     {/* Editor overlay */}
     {showEditor && segments.length > 0 && (
@@ -700,6 +699,7 @@ export default function Home() {
           onBack={() => setShowEditor(false)}
         />
       </div>
-    )}
+)}
+  </div>
   )
 }
