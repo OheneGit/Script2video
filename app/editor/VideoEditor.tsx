@@ -486,7 +486,7 @@ export default function VideoEditor({ segments: initialSegments, totalDuration, 
                   <video controls src={renderStatus.url} className="w-full rounded-lg mb-4 max-h-48 bg-black"/>
                 )}
                 <div className="flex gap-3">
-                  <a href={`/api/download?file=${renderStatus.url.split("/").pop()}`} download="script2video.mp4"
+                  <a href={`/api/download?file=${renderStatus.url?.split("/").pop()}`} download="script2video.mp4"
                     className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium rounded-lg text-center transition-colors">
                     Download MP4
                   </a>
