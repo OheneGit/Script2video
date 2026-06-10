@@ -142,7 +142,7 @@ async function runRender(jobId: string, req: RenderRequest) {
     const total  = usable.length
 
     // Download and process in parallel batches of 10 (faster!)
-    const BATCH = 10
+    const BATCH = 3
     const trimmedPaths: string[] = []
 
     for (let i = 0; i < total; i += BATCH) {
@@ -152,10 +152,10 @@ async function runRender(jobId: string, req: RenderRequest) {
         progressLabel: `Processing clips ${i + 1}–${Math.min(i + BATCH, total)} of ${total}...`,
       })
       const batch = usable.slice(i, i + BATCH)
-      const results = await Promise.all(
-        batch.map((seg, bi) => processSegment(seg, i + bi, jobId, req.transition))
-      )
-      trimmedPaths.push(...results.filter((p): p is string => p !== null))
+      for (const seg of batch) {
+  	const result = await processSegment(seg, batch.indexOf(seg) + i, jobId, req.transition)
+  	if (result) trimmedPaths.push(result)
+	}
     }
 
     if (trimmedPaths.length === 0) {
