@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef } from 'react'
+import VideoEditor from './editor/VideoEditor'
 import type { ScriptSegment, GenerateResponse, RenderResponse, RenderRequest, CaptionStyle } from './lib/types'
 
 function fmtDur(s: number) {
@@ -78,6 +79,7 @@ export default function Home() {
   const [totalDur, setTotalDur]           = useState(0)
   const [renderStatus, setRenderStatus]   = useState<RenderResponse | null>(null)
   const [rendering, setRendering]         = useState(false)
+  const [showEditor, setShowEditor]         = useState(false)
 
   const segCount = script.replace(/\n+/g,' ').split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 20).length
 
@@ -288,6 +290,15 @@ export default function Home() {
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                   {loading ? 'Searching...' : 'Find matching videos'}
                 </button>
+                {segments.length > 0 && !loading && (
+                  <button onClick={() => setShowEditor(true)}
+                    className="px-5 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-medium rounded-lg flex items-center gap-2 transition-colors">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    Open Editor
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -661,7 +672,7 @@ export default function Home() {
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { v: segments.reduce((a,s)=>a+s.clips.length,0), l: 'Clips found' },
-                  { v: Array.from(new Set(segments.flatMap(s=>s.clips.map(c=>c.source)))).length, l: 'Sources' },
+                  { v: [...new Set(segments.flatMap(s=>s.clips.map(c=>c.source)))].length, l: 'Sources' },
                   { v: fmtDur(totalDur), l: 'Duration' },
                 ].map(({v,l}) => (
                   <div key={l} className="bg-gray-50 rounded-lg p-2 text-center">
@@ -675,5 +686,20 @@ export default function Home() {
         </div>
       </div>
     </div>
+
+    {/* ── Editor overlay ── */}
+    {showEditor && segments.length > 0 && (
+      <div className="fixed inset-0 z-50">
+        <VideoEditor
+          segments={segments}
+          totalDuration={totalDur}
+          audioMode={audioMode}
+          audioFile={audioMode === 'tts' ? ttsAudio?.filename : uploadedAudio?.filename}
+          audioDuration={audioMode === 'tts' ? ttsAudio?.duration : uploadedAudio?.duration}
+          audioUrl={audioMode === 'tts' ? ttsAudio?.url : uploadedAudio?.url}
+          onBack={() => setShowEditor(false)}
+        />
+      </div>
+    )}
   )
 }
