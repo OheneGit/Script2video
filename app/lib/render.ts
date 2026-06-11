@@ -18,6 +18,37 @@ import { extractStatsServer, generateStatFrames, generateCoinTrack, getCoinSound
 const execAsync = promisify(exec)
 const OUTPUT_DIR = path.join(process.cwd(), 'public', 'renders')
 const TEMP_DIR   = path.join(process.cwd(), 'tmp_clips')
+
+async function sendRenderEmail(email: string, downloadUrl: string, durationSecs: number) {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) return
+  const mins = Math.floor(durationSecs / 60)
+  const secs = Math.round(durationSecs % 60)
+  const durationStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'Script2Video <onboarding@resend.dev>',
+        to: email,
+        subject: '🎬 Your video is ready!',
+        html: `
+          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
+            <h2 style="color:#7c3aed">Your video is ready!</h2>
+            <p>Your <strong>${durationStr}</strong> video has finished rendering.</p>
+            <a href="${downloadUrl}" style="display:inline-block;margin:16px 0;padding:12px 24px;background:#7c3aed;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
+              Download Video
+            </a>
+            <p style="color:#888;font-size:13px">This link will work as long as your Railway service is running.</p>
+          </div>
+        `,
+      }),
+    })
+  } catch (e) {
+    console.warn('Email notification failed:', e)
+  }
+}
 const JOBS_FILE  = path.join(process.cwd(), 'tmp_clips', 'jobs.json')
 
 function loadJobs(): Map<string, RenderResponse> {
@@ -294,6 +325,14 @@ async function runRender(jobId: string, req: RenderRequest) {
       progress: 100,
       progressLabel: 'Done!',
     })
+
+    // Send email notification if requested
+    if (req.notifyEmail) {
+      const base = process.env.RAILWAY_PUBLIC_DOMAIN
+        ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+        : process.env.NEXTAUTH_URL ?? ''
+      if (base) await sendRenderEmail(req.notifyEmail, `${base}/renders/${jobId}.mp4`, totalDuration)
+    }
 
   } catch (err: any) {
     console.error('Render error:', err)

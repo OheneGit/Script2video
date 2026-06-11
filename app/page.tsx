@@ -79,6 +79,7 @@ export default function Home() {
   const [totalDur, setTotalDur]           = useState(0)
   const [renderStatus, setRenderStatus]   = useState<RenderResponse | null>(null)
   const [rendering, setRendering]         = useState(false)
+  const [notifyEmail, setNotifyEmail]     = useState('')
   const [showEditor, setShowEditor]         = useState(false)
 
   const segCount = script.replace(/\n+/g,' ').split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 20).length
@@ -238,6 +239,7 @@ export default function Home() {
       segments, resolution, aspectRatio, transition, addCaptions, captionStyle, fps: 25,
       audioMode,
       audioFile: activeAudio?.filename,
+      notifyEmail: notifyEmail.trim() || undefined,
     }
 
     try {
@@ -677,6 +679,16 @@ export default function Home() {
 
           {segments.length > 0 && (
             <div className="flex flex-col gap-2">
+              <div>
+                <label className="text-xs text-gray-500 block mb-1.5">Notify when done (optional)</label>
+                <input
+                  type="email"
+                  value={notifyEmail}
+                  onChange={e => setNotifyEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-brand-400"
+                />
+              </div>
               <button onClick={renderVideo} disabled={rendering}
                 className="w-full py-3 bg-brand-400 hover:bg-brand-600 disabled:opacity-40 text-white text-sm font-medium rounded-xl flex items-center justify-center gap-2 transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

@@ -85,6 +85,7 @@ export interface RenderRequest {
   fps: 25 | 30
   audioFile?: string    // filename in public/tts/ or public/uploads/
   audioMode: 'none' | 'tts' | 'upload'
+  notifyEmail?: string  // optional — send email when render is done
 }
 
 export interface RenderResponse {
