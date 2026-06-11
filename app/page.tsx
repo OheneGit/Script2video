@@ -208,6 +208,25 @@ export default function Home() {
     }
   }
 
+  // Export project JSON for local rendering
+  const exportForLocalRender = useCallback(() => {
+    const activeAudio = audioMode === 'tts' ? ttsAudio : audioMode === 'upload' ? uploadedAudio : null
+    const project = {
+      segments, resolution, aspectRatio, transition, addCaptions, captionStyle, fps: 25,
+      audioMode,
+      audioFile: activeAudio?.filename,
+      audioUrl: activeAudio?.url,   // full URL so local script can download it
+      exportedAt: new Date().toISOString(),
+      // Embed the Railway base URL so the local script knows where to download audio
+      serverBase: window.location.origin,
+    }
+    const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `project_${Date.now()}.json`
+    a.click()
+  }, [segments, resolution, aspectRatio, transition, addCaptions, captionStyle, audioMode, ttsAudio, uploadedAudio])
+
   // Render
   const renderVideo = useCallback(async () => {
     if (rendering || segments.length === 0) return
@@ -657,13 +676,22 @@ export default function Home() {
           </div>
 
           {segments.length > 0 && (
-            <button onClick={renderVideo} disabled={rendering}
-              className="w-full py-3 bg-brand-400 hover:bg-brand-600 disabled:opacity-40 text-white text-sm font-medium rounded-xl flex items-center justify-center gap-2 transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M15 10l4.553-2.369A1 1 0 0121 8.5v7a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
-              </svg>
-              {rendering ? 'Rendering…' : 'Render video'}
-            </button>
+            <div className="flex flex-col gap-2">
+              <button onClick={renderVideo} disabled={rendering}
+                className="w-full py-3 bg-brand-400 hover:bg-brand-600 disabled:opacity-40 text-white text-sm font-medium rounded-xl flex items-center justify-center gap-2 transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M15 10l4.553-2.369A1 1 0 0121 8.5v7a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+                </svg>
+                {rendering ? 'Rendering…' : 'Render video'}
+              </button>
+              <button onClick={exportForLocalRender}
+                className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl flex items-center justify-center gap-2 transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                </svg>
+                Export for local render
+              </button>
+            </div>
           )}
 
           {segments.length > 0 && (
