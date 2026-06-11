@@ -5,7 +5,10 @@ import fs from 'fs'
 import path from 'path'
 
 const execAsync = promisify(exec)
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads')
+// On Railway: set UPLOAD_DIR=/data/uploads (persistent volume mount)
+// Locally: falls back to public/uploads
+const UPLOAD_DIR = process.env.UPLOAD_DIR
+  || path.join(process.cwd(), 'public', 'uploads')
 
 function ensureDir() {
   if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true })
@@ -54,7 +57,7 @@ export async function POST(req: NextRequest) {
     console.log(`Uploaded: ${file.name} | Duration: ${duration}s | File: ${filename}`)
 
     return NextResponse.json({
-      audioUrl: `/uploads/${filename}`,
+      audioUrl: `/api/audio/${filename}`,
       filename,
       duration,
       originalName: file.name,

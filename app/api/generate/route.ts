@@ -229,16 +229,20 @@ export async function POST(req: NextRequest) {
 
     // Scale durations to match exact audio length
     if (hasAudio && audioDuration && audioDuration > 0) {
-      const rawTotal = sorted.reduce((acc, s) => acc + s.duration, 0)
-      if (rawTotal > 0 && Math.abs(rawTotal - audioDuration) > 1) {
-        const scaleFactor = audioDuration / rawTotal
-        sorted.forEach(s => { s.duration = Math.max(2, Math.round(s.duration * scaleFactor)) })
-        const newTotal = sorted.reduce((acc, s) => acc + s.duration, 0)
-        const diff = Math.round(audioDuration) - newTotal
-        if (sorted.length > 0 && diff !== 0) {
-          sorted[sorted.length - 1].duration = Math.max(2, sorted[sorted.length - 1].duration + diff)
+      const target = Math.round(audioDuration)
+      // Distribute target seconds proportionally by word count, no artificial minimum
+      const totalWords = sorted.reduce((a, s) => a + s.text.trim().split(/\s+/).length, 0)
+      let allocated = 0
+      sorted.forEach((s, i) => {
+        if (i === sorted.length - 1) {
+          s.duration = Math.max(1, target - allocated)
+        } else {
+          const words = s.text.trim().split(/\s+/).length
+          const d = Math.max(1, Math.round((words / totalWords) * target))
+          s.duration = d
+          allocated += d
         }
-      }
+      })
     }
 
     const totalDuration = sorted.reduce((acc, s) => acc + s.duration, 0)

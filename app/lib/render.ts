@@ -207,11 +207,12 @@ async function runRender(jobId: string, req: RenderRequest) {
     const hasAudio    = req.audioMode !== 'none' && req.audioFile
     const hasCaptions = req.addCaptions && req.captionStyle
 
+    const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'public', 'uploads')
     let audioPath = ''
     if (hasAudio && req.audioFile) {
       audioPath = req.audioMode === 'tts'
         ? path.join(process.cwd(), 'public', 'tts', path.basename(req.audioFile))
-        : path.join(process.cwd(), 'public', 'uploads', path.basename(req.audioFile))
+        : path.join(uploadDir, path.basename(req.audioFile))
     }
 
     const captionText  = usable.map(s => s.text.replace(/^↳\s*/, '')).join(' ')
