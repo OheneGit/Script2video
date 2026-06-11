@@ -1,8 +1,8 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "ffmpeg"]
+nixPkgs = ["nodejs_22", "ffmpeg"]
 
 [phases.install]
-cmds = ["npm ci"]
+cmds = ["PUPPETEER_SKIP_DOWNLOAD=true npm ci"]
 
 [phases.build]
 cmds = ["npm run build"]
